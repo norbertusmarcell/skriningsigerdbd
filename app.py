@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
-from tensorflow.keras.models import save_model
+import os
 
 # Title for the Streamlit app
 st.title("Create and Download Dummy Model for DBD Prediction")
@@ -19,8 +19,8 @@ def create_and_save_model():
     # Initialize weights randomly
     model.set_weights([np.random.rand(*w.shape) for w in model.get_weights()])
 
-    # Save the model to an .h5 file
-    model_path = "/mnt/data/dengue_model_dummy.h5"
+    # Save the model to a new location within Streamlit app directory
+    model_path = "dengue_model_dummy.h5"
     model.save(model_path)
     
     return model_path
