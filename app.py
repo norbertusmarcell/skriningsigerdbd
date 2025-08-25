@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 # =========================
 # Memuat Data dari CSV
 # =========================
-@st.cache
+@st.cache_data
 def load_data(csv_file: str):
     df = pd.read_csv(csv_file)
     return df
@@ -39,14 +39,19 @@ y = df['Diagnosis']
 model = RandomForestClassifier(n_estimators=100, random_state=42)
 model.fit(X, y)
 
-# Input Data untuk Streamlit
-temp = st.sidebar.number_input("Suhu Tubuh", 35.0, 42.0)
-nausea = st.sidebar.number_input("Mual (Episode)", 0, 10)
-joint_pain = st.sidebar.number_input("Nyeri Sendi (Hari)", 0, 7)
-lack_of_appetite = st.sidebar.number_input("Kurang Nafsu Makan (Hari)", 0, 7)
-dizziness = st.sidebar.number_input("Pusing (Hari)", 0, 7)
-red_spots = st.sidebar.selectbox("Ruam Merah", ['None', 'Little', 'Many'])
-water_stagnation = st.sidebar.radio("Genangan Air di Sekitar Rumah", ['Tidak', 'Ya'])
+# Membuat dua kolom untuk menampilkan form di samping
+col1, col2 = st.columns(2)
+
+with col1:
+    temp = st.number_input("Suhu Tubuh", 35.0, 42.0)
+    nausea = st.number_input("Mual (Episode)", 0, 10)
+    joint_pain = st.number_input("Nyeri Sendi (Hari)", 0, 7)
+    lack_of_appetite = st.number_input("Kurang Nafsu Makan (Hari)", 0, 7)
+    dizziness = st.number_input("Pusing (Hari)", 0, 7)
+    
+with col2:
+    red_spots = st.selectbox("Ruam Merah", ['None', 'Little', 'Many'])
+    water_stagnation = st.radio("Genangan Air di Sekitar Rumah", ['Tidak', 'Ya'])
 
 # Menyiapkan data input untuk prediksi
 input_data = pd.DataFrame({
@@ -68,8 +73,8 @@ input_data['Red Spots'] = input_data['Red Spots'].map({'None': 0, 'Little': 1, '
 # Melakukan prediksi
 prediction = model.predict(input_data)
 
-# Menampilkan hasil prediksi
+# Menampilkan hasil prediksi dengan warna
 if prediction == 1:
-    st.write("Prediksi: **DBD Terdeteksi**")
+    st.markdown('<span style="color:red;">Prediksi: **DBD Terdeteksi**. Segera ke rumah sakit terdekat.</span>', unsafe_allow_html=True)
 else:
-    st.write("Prediksi: **Tidak DBD**")
+    st.markdown('<span style="color:green;">Prediksi: **Tidak DBD**. Lakukan upaya pencegahan karena di kota Anda sedang tinggi kejadian DBDnya.</span>', unsafe_allow_html=True)
