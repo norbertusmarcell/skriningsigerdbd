@@ -1,12 +1,5 @@
-# Python bytecode
+*.pkl
 __pycache__/
-
-# Model file
-model/dengue_model.h5
-
-# Environment files
-.env
-*.env
-
-# Data files
-data/*
+*.pyc
+*.csv
+*.log
