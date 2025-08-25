@@ -1,51 +1,75 @@
-import streamlit as st
+import pandas as pd
 import numpy as np
-from tensorflow.keras.models import load_model
-from sklearn.preprocessing import MinMaxScaler  # Add this import
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+import streamlit as st
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import StandardScaler
 
-# Fungsi untuk memuat model
-def load_trained_model():
-    model_path = "/mnt/data/dengue_model_dummy.h5"
-    model = load_model(model_path)
-    return model
+# =========================
+# Memuat Data dari CSV
+# =========================
+@st.cache
+def load_data(csv_file: str):
+    df = pd.read_csv(csv_file)
+    return df
 
-# Fungsi untuk melakukan prediksi
-def make_prediction(model, input_data):
-    prediction = model.predict(input_data)
-    return prediction
+# =========================
+# Aplikasi Streamlit
+# =========================
+st.title("Aplikasi Prediksi DBD dengan Random Forest")
+st.sidebar.header("Masukkan Data Pasien")
 
-# Tampilan UI untuk input data pengguna
-st.title("Prediksi DBD dengan Model Dummy")
+# Memuat Data Dummy dari CSV
+data_file = "data/data_dummy.csv"  # Ganti dengan path file CSV yang sesuai
+df = load_data(data_file)
 
-st.write("Masukkan data berikut untuk memprediksi apakah seseorang terdeteksi DBD:")
+# Normalisasi data (kecuali kolom target 'Diagnosis')
+scaler = StandardScaler()
+df[['Body Temperature', 'Nausea', 'Joint Pain', 'Lack of Appetite', 'Dizziness']] = scaler.fit_transform(
+    df[['Body Temperature', 'Nausea', 'Joint Pain', 'Lack of Appetite', 'Dizziness']]
+)
 
-# Input data pengguna
-body_temperature = st.number_input("Suhu Tubuh (°C)", min_value=36.0, max_value=42.0, value=37.5)
-nausea_vomiting = st.number_input("Mual dan Muntah (0-5 kali)", min_value=0, max_value=5, value=1)
-joint_pain = st.number_input("Nyeri Sendi (0-10 hari)", min_value=0, max_value=10, value=2)
-appetite_loss = st.number_input("Kehilangan Nafsu Makan (0-10 hari)", min_value=0, max_value=10, value=3)
-dizziness = st.number_input("Pusing (0-10 hari)", min_value=0, max_value=10, value=1)
-red_spots = st.selectbox("Ruam (Red Spots)", options=['None', 'Little', 'Many'], index=0)
-puddle = st.selectbox("Genangan Air (Puddle)", options=['None', 'Low', 'Medium', 'High'], index=0)
+# Mengubah kolom 'Red Spots' menjadi nilai numerik
+df['Red Spots'] = df['Red Spots'].map({'None': 0, 'Little': 1, 'Many': 2})
 
-# Mengonversi input ke format yang bisa diterima oleh model
-input_data = np.array([[body_temperature, nausea_vomiting, joint_pain, appetite_loss, dizziness, 
-                        0 if red_spots == 'None' else 1 if red_spots == 'Little' else 2, 
-                        0 if puddle == 'None' else 1 if puddle == 'Low' else 2 if puddle == 'Medium' else 3]])
+# Membagi data menjadi fitur (X) dan target (y)
+X = df.drop('Diagnosis', axis=1)
+y = df['Diagnosis']
 
-# Normalisasi input data sesuai dengan data yang digunakan saat pelatihan
-scaler = MinMaxScaler()  # MinMaxScaler sudah terimport
-input_data_scaled = scaler.fit_transform(input_data)
+# Melatih model Random Forest
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X, y)
 
-# Tombol untuk melakukan prediksi
-if st.button("Prediksi DBD"):
-    model = load_trained_model()  # Memuat model dummy
-    prediction = make_prediction(model, input_data_scaled)  # Melakukan prediksi
+# Input Data untuk Streamlit
+temp = st.sidebar.number_input("Suhu Tubuh", 35.0, 42.0)
+nausea = st.sidebar.number_input("Mual (Episode)", 0, 10)
+joint_pain = st.sidebar.number_input("Nyeri Sendi (Hari)", 0, 7)
+lack_of_appetite = st.sidebar.number_input("Kurang Nafsu Makan (Hari)", 0, 7)
+dizziness = st.sidebar.number_input("Pusing (Hari)", 0, 7)
+red_spots = st.sidebar.selectbox("Ruam Merah", ['None', 'Little', 'Many'])
+water_stagnation = st.sidebar.radio("Genangan Air di Sekitar Rumah", ['Tidak', 'Ya'])
 
-    # Tampilkan hasil prediksi
-    if prediction > 0.5:
-        st.success("Prediksi: Positif DBD (Kemungkinan tinggi)")
-    else:
-        st.success("Prediksi: Negatif DBD (Kemungkinan rendah)")
+# Menyiapkan data input untuk prediksi
+input_data = pd.DataFrame({
+    'Body Temperature': [temp],
+    'Nausea': [nausea],
+    'Joint Pain': [joint_pain],
+    'Lack of Appetite': [lack_of_appetite],
+    'Dizziness': [dizziness],
+    'Red Spots': [red_spots],
+    'Water Stagnation': [1 if water_stagnation == 'Ya' else 0]
+})
+
+# Normalisasi data input
+input_data[['Body Temperature', 'Nausea', 'Joint Pain', 'Lack of Appetite', 'Dizziness']] = scaler.transform(input_data[['Body Temperature', 'Nausea', 'Joint Pain', 'Lack of Appetite', 'Dizziness']])
+
+# Mengubah 'Red Spots' menjadi nilai numerik
+input_data['Red Spots'] = input_data['Red Spots'].map({'None': 0, 'Little': 1, 'Many': 2})
+
+# Melakukan prediksi
+prediction = model.predict(input_data)
+
+# Menampilkan hasil prediksi
+if prediction == 1:
+    st.write("Prediksi: **DBD Terdeteksi**")
+else:
+    st.write("Prediksi: **Tidak DBD**")
