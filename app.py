@@ -1,6 +1,9 @@
 import streamlit as st
 import numpy as np
 from tensorflow.keras.models import load_model
+from sklearn.preprocessing import MinMaxScaler  # Add this import
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
 
 # Fungsi untuk memuat model
 def load_trained_model():
@@ -33,7 +36,7 @@ input_data = np.array([[body_temperature, nausea_vomiting, joint_pain, appetite_
                         0 if puddle == 'None' else 1 if puddle == 'Low' else 2 if puddle == 'Medium' else 3]])
 
 # Normalisasi input data sesuai dengan data yang digunakan saat pelatihan
-scaler = MinMaxScaler()
+scaler = MinMaxScaler()  # MinMaxScaler sudah terimport
 input_data_scaled = scaler.fit_transform(input_data)
 
 # Tombol untuk melakukan prediksi
