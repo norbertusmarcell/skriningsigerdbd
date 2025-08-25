@@ -1,52 +1,64 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
-from tensorflow.keras.models import load_model
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
-# Memuat model dummy yang sudah disimpan
-model = load_model("dengue_model.h5")
+# Menampilkan judul aplikasi
+st.title("Pelatihan Model Deteksi DBD")
 
-# Data dummy untuk pengujian (gunakan normalisasi yang sama seperti pada data asli)
-scaler = MinMaxScaler()
+# Mengunggah file dataset
+uploaded_file = st.file_uploader("Pilih file CSV dataset", type=["csv"])
 
-# Judul aplikasi
-st.title("Skrining Demam Berdarah (DBD) dengan Model Dummy")
+if uploaded_file is not None:
+    # Membaca data dari file CSV
+    data = pd.read_csv(uploaded_file)
 
-# Formulir untuk input data gejala pasien
-with st.form("prediction_form"):
-    st.subheader("Masukkan Gejala Pasien")
+    # Menampilkan beberapa data awal untuk melihat struktur
+    st.write(data.head())
 
-    # Input gejala pasien
-    temperature = st.slider("Suhu Tubuh (°C)", 36, 42, 37)
-    nausea = st.slider("Mual (kali)", 0, 5, 1)
-    joint_pain = st.slider("Nyeri Sendi (hari)", 0, 7, 2)
-    appetite_loss = st.slider("Kehilangan Nafsu Makan (hari)", 0, 7, 3)
-    dizziness = st.slider("Pusing (hari)", 0, 7, 2)
-    gender = st.radio("Jenis Kelamin", ['L', 'P'])
-    red_spots = st.radio("Bercak Merah (ruam)", ['Slight', 'Medium', 'Many'])
-    puddles = st.radio("Apakah ada genangan air di sekitar rumah?", ['No', 'Yes'])
-
-    # Tombol submit untuk prediksi
-    submit_button = st.form_submit_button("Prediksi")
-
-# Preprocessing data input setelah tombol submit
-if submit_button:
-    # Encoding variabel kategori menjadi numerik
-    input_data = np.array([[temperature, nausea, joint_pain, appetite_loss, dizziness,
-                            0 if gender == 'L' else 1, {'Slight': 0, 'Medium': 1, 'Many': 2}[red_spots], 
-                            1 if puddles == 'Yes' else 0]])
+    # Memilih fitur dan label (sesuaikan dengan kolom dataset Anda)
+    X = data[['Body Temperature', 'Nausea Vomiting', 'Joint Pain', 'Appetite Loss', 'Dizziness', 'Red Spots']]
+    y = data['Diagnosis']  # 1 untuk positif DBD, 0 untuk negatif
 
     # Normalisasi data
-    input_data_normalized = scaler.fit_transform(input_data)
+    scaler = MinMaxScaler()
+    X_scaled = scaler.fit_transform(X)
 
-    # Melakukan prediksi dengan model dummy
-    prediction = model.predict(input_data_normalized)
+    # Membagi data menjadi pelatihan dan pengujian
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.3, random_state=42)
 
-    # Menampilkan hasil prediksi
-    if prediction > 0.5:
-        st.write("Prediksi: **Positif Demam Berdarah**")
-    else:
-        st.write("Prediksi: **Negatif Demam Berdarah**")
+    # Menambahkan tombol untuk memulai pelatihan model
+    if st.button("Mulai Pelatihan Model"):
+        with st.spinner('Melatih model...'):
+            # Membangun model ANN
+            model = Sequential()
+            model.add(Dense(64, activation='relu', input_dim=X_train.shape[1]))
+            model.add(Dropout(0.5))  # Dropout untuk mencegah overfitting
+            model.add(Dense(32, activation='relu'))
+            model.add(Dense(1, activation='sigmoid'))  # Output untuk klasifikasi biner
 
+            # Kompilasi model
+            model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
+            # Melatih model
+            history = model.fit(X_train, y_train, epochs=10, batch_size=16, validation_data=(X_test, y_test))
+
+            # Evaluasi model
+            loss, accuracy = model.evaluate(X_test, y_test)
+            st.success(f"Model selesai dilatih dengan akurasi: {accuracy*100:.2f}%")
+
+            # Menyimpan model
+            model.save('dengue_model.h5')
+            st.write("Model disimpan sebagai 'dengue_model.h5'.")
+
+            # Plot akurasi pelatihan
+            st.subheader('Grafik Akurasi')
+            st.line_chart(history.history['accuracy'])
+
+            # Plot kerugian pelatihan
+            st.subheader('Grafik Kerugian')
+            st.line_chart(history.history['loss'])
