@@ -4,32 +4,33 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import save_model
 
-# Judul aplikasi
-st.title("Membuat Model Dummy untuk Prediksi Demam Berdarah (DBD)")
+# Title for the Streamlit app
+st.title("Create and Download Dummy Model for DBD Prediction")
 
-# Fungsi untuk membuat dan menyimpan model dummy
-def create_dummy_model():
-    # Membuat model dummy
+# Function to create and save the model
+def create_and_save_model():
+    # Create a dummy model
     model = Sequential([
-        Dense(64, input_dim=7, activation='relu'),  # 7 input features (seperti suhu tubuh, nyeri sendi, dll)
-        Dense(32, activation='relu'),  # Lapisan tersembunyi
-        Dense(1, activation='sigmoid')  # Output layer (0 atau 1)
+        Dense(64, input_dim=7, activation='relu'),  # 7 input features (temperature, joint pain, etc.)
+        Dense(32, activation='relu'),
+        Dense(1, activation='sigmoid')  # Output layer for binary classification (positive/negative)
     ])
 
-    # Inisialisasi bobot secara acak
+    # Initialize weights randomly
     model.set_weights([np.random.rand(*w.shape) for w in model.get_weights()])
 
-    # Menyimpan model dummy ke dalam file .h5
+    # Save the model to an .h5 file
     model_path = "/mnt/data/dengue_model_dummy.h5"
     model.save(model_path)
+    
     return model_path
 
-# Tombol untuk membuat model
-if st.button('Buat Model Dummy'):
-    model_path = create_dummy_model()
-    st.success(f'Model dummy telah dibuat dan disimpan! [Download Model](/{model_path})')
+# Button to create the model
+if st.button("Create Dummy Model"):
+    model_path = create_and_save_model()
+    st.success(f"Dummy model created and saved successfully! [Download Model](/{model_path})")
 
-    # Menyediakan link download model
+    # Provide download button for the model
     st.download_button(
         label="Download Model .h5",
         data=model_path,
