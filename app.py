@@ -5,7 +5,7 @@ from tensorflow.keras.models import load_model
 from sklearn.preprocessing import MinMaxScaler
 
 # Memuat model dummy yang sudah disimpan
-model = load_model("dengue_model.h5")
+model = load_model("model/dengue_model.h5")
 
 # Data dummy untuk pengujian (gunakan normalisasi yang sama seperti pada data asli)
 scaler = MinMaxScaler()
@@ -48,3 +48,4 @@ if submit_button:
         st.write("Prediksi: **Positif Demam Berdarah**")
     else:
         st.write("Prediksi: **Negatif Demam Berdarah**")
+
