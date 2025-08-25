@@ -26,7 +26,7 @@ def create_dummy_model():
     model.fit(X, y, epochs=10, batch_size=16)
 
     # Menyimpan model dalam format .h5
-    model_path = "/mnt/data/dengue_model_dummy.h5"
+    model_path = "dengue_model_dummy.h5"
     model.save(model_path)
     return model_path
 
