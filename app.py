@@ -28,6 +28,9 @@ df[['Body Temperature', 'Nausea', 'Joint Pain', 'Lack of Appetite', 'Dizziness']
 # Mengisi nilai NaN dengan rata-rata dari setiap kolom
 df[['Body Temperature', 'Nausea', 'Joint Pain', 'Lack of Appetite', 'Dizziness']] = df[['Body Temperature', 'Nausea', 'Joint Pain', 'Lack of Appetite', 'Dizziness']].fillna(df[['Body Temperature', 'Nausea', 'Joint Pain', 'Lack of Appetite', 'Dizziness']].mean())
 
+# Pastikan tidak ada nilai NaN pada fitur dan target
+df = df.dropna()
+
 # Normalisasi data
 scaler = StandardScaler()
 df[['Body Temperature', 'Nausea', 'Joint Pain', 'Lack of Appetite', 'Dizziness']] = scaler.fit_transform(df[['Body Temperature', 'Nausea', 'Joint Pain', 'Lack of Appetite', 'Dizziness']])
@@ -35,6 +38,10 @@ df[['Body Temperature', 'Nausea', 'Joint Pain', 'Lack of Appetite', 'Dizziness']
 # Membagi data menjadi fitur (X) dan target (y)
 X = df.drop('Diagnosis', axis=1)
 y = df['Diagnosis']
+
+# Memeriksa tipe data fitur dan target
+st.write("Tipe Data Fitur dan Target:")
+st.write(X.dtypes)
 
 # Melatih model Random Forest
 model = RandomForestClassifier(n_estimators=100, random_state=42)
