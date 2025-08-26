@@ -25,7 +25,7 @@ st.title("Aplikasi Prediksi DBD dengan Random Forest")
 st.sidebar.header("Masukkan Data Pasien")
 
 # Path file CSV
-data_file = 'data/data_dummy.csv'  # Ganti dengan path yang sesuai jika berbeda
+data_file = '/mnt/data/data_dummy_realistic_dbd.csv'  # Ganti dengan path yang sesuai jika berbeda
 
 # Memuat Data Dummy dari CSV
 df = load_data(data_file)
@@ -37,9 +37,6 @@ if not df.empty:
 
     # Menghapus baris yang mengandung nilai NaN
     df = df.dropna()
-
-    # Menampilkan data yang telah diperbaiki
-    st.write("Data yang telah diperbaiki:", df.head())
 
     # Normalisasi data (fitur numerik)
     scaler = StandardScaler()
