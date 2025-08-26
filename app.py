@@ -25,7 +25,7 @@ st.title("Aplikasi Prediksi DBD dengan Random Forest")
 st.sidebar.header("Masukkan Data Pasien")
 
 # Path file CSV
-data_file = '/mnt/data/data_dummy_realistic_dbd.csv'  # Ganti dengan path yang sesuai jika berbeda
+data_file = 'data/data_dummy.csv'  # Ganti dengan path yang sesuai jika berbeda
 
 # Memuat Data Dummy dari CSV
 df = load_data(data_file)
@@ -90,3 +90,4 @@ if not df.empty:
         st.markdown('<span style="color:red;">Prediksi: **DBD Terdeteksi**. Segera ke rumah sakit terdekat.</span>', unsafe_allow_html=True)
     else:
         st.markdown('<span style="color:green;">Prediksi: **Tidak DBD**. Lakukan upaya pencegahan karena di kota Anda sedang tinggi kejadian DBDnya.</span>', unsafe_allow_html=True)
+
