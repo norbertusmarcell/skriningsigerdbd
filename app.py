@@ -19,7 +19,7 @@ st.title("Aplikasi Prediksi DBD dengan Random Forest")
 st.sidebar.header("Masukkan Data Pasien")
 
 # Memuat Data Dummy dari CSV
-data_file = "data/data_dummy_realistic_dbd.csv"  # Ganti dengan path file CSV yang sesuai
+data_file = "data/data_dummy.csv"  # Ganti dengan path file CSV yang sesuai
 df = load_data(data_file)
 
 # Memastikan kolom 'Red Spots' menjadi numerik (konversi kategori ke nilai numerik)
@@ -42,3 +42,4 @@ y = df['Diagnosis']
 
 # Melatih model Random Forest
 model = RandomForestClassifi
+
